@@ -12,8 +12,10 @@ export interface UserSession {
 
 interface AuthStore {
   session: UserSession | null
+  hasHydrated: boolean
   login: (username: string, role: UserRole) => void
   logout: () => void
+  setHasHydrated: (b: boolean) => void
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {
@@ -46,10 +48,17 @@ export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
       session: null,
+      hasHydrated: false,
       login: (username, role) => set({ session: { username, role } }),
       logout: () => set({ session: null }),
+      setHasHydrated: (b) => set({ hasHydrated: b }),
     }),
-    { name: 'xthy-auth' }
+    {
+      name: 'xthy-auth',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
+    }
   )
 )
 
