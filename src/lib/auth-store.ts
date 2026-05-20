@@ -28,6 +28,20 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   viewer: '仅可查看数据和结果，不可执行任何操作',
 }
 
+// 预设账号表（前端静态验证，仅示范用途）
+const PRESET_ACCOUNTS: Record<string, { password: string; role: UserRole }> = {
+  admin: { password: 'admin_xthy', role: 'admin' },
+  operator: { password: 'operator_xthy', role: 'operator' },
+  viewer: { password: 'viewer_xthy', role: 'viewer' },
+}
+
+export function authenticate(username: string, password: string): UserRole | null {
+  const account = PRESET_ACCOUNTS[username.trim()]
+  if (!account) return null
+  if (account.password !== password) return null
+  return account.role
+}
+
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({

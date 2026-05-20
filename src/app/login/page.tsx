@@ -6,36 +6,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { useAuthStore, UserRole, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/lib/auth-store'
-import { Shield, Users, Eye } from 'lucide-react'
-
-const ROLE_ICONS: Record<UserRole, React.ReactNode> = {
-  admin: <Shield className="w-6 h-6" />,
-  operator: <Users className="w-6 h-6" />,
-  viewer: <Eye className="w-6 h-6" />,
-}
-
-const ROLE_COLORS: Record<UserRole, string> = {
-  admin: 'border-blue-300 bg-blue-50 hover:bg-blue-100',
-  operator: 'border-green-300 bg-green-50 hover:bg-green-100',
-  viewer: 'border-gray-300 bg-gray-50 hover:bg-gray-100',
-}
-
-const ROLE_ACTIVE_COLORS: Record<UserRole, string> = {
-  admin: 'ring-2 ring-blue-500 border-blue-500 bg-blue-100',
-  operator: 'ring-2 ring-green-500 border-green-500 bg-green-100',
-  viewer: 'ring-2 ring-gray-500 border-gray-500 bg-gray-200',
-}
+import { useAuthStore, authenticate, ROLE_LABELS } from '@/lib/auth-store'
+import { Lock, User, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const login = useAuthStore(s => s.login)
   const router = useRouter()
 
   const handleLogin = () => {
-    if (!username.trim() || !selectedRole) return
-    login(username.trim(), selectedRole)
+    setError('')
+    if (!username.trim() || !password) {
+      setError('请输入用户名和密码')
+      return
+    }
+    const role = authenticate(username, password)
+    if (!role) {
+      setError('用户名或密码错误')
+      return
+    }
+    login(username.trim(), role)
     router.push('/')
   }
 
@@ -47,47 +39,55 @@ export default function LoginPage() {
             <span className="text-white font-bold text-lg">衡</span>
           </div>
           <CardTitle className="text-xl">晓天衡宇数据审核平台</CardTitle>
-          <p className="text-sm text-gray-500 mt-1">请选择角色登录</p>
+          <p className="text-sm text-gray-500 mt-1">请使用账号密码登录</p>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>用户名</Label>
+            <Label className="flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5" />
+              用户名
+            </Label>
             <Input
               value={username}
               onChange={e => setUsername(e.target.value)}
               placeholder="请输入用户名"
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              autoFocus
             />
           </div>
 
           <div className="space-y-2">
-            <Label>选择角色</Label>
-            <div className="grid grid-cols-1 gap-3">
-              {(['admin', 'operator', 'viewer'] as UserRole[]).map(role => (
-                <button
-                  key={role}
-                  onClick={() => setSelectedRole(role)}
-                  className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
-                    selectedRole === role ? ROLE_ACTIVE_COLORS[role] : ROLE_COLORS[role]
-                  }`}
-                >
-                  <div className="text-gray-600">{ROLE_ICONS[role]}</div>
-                  <div>
-                    <div className="font-medium text-sm">{ROLE_LABELS[role]}</div>
-                    <div className="text-xs text-gray-500">{ROLE_DESCRIPTIONS[role]}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
+            <Label className="flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5" />
+              密码
+            </Label>
+            <Input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="请输入密码"
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+            />
           </div>
 
-          <Button
-            className="w-full"
-            onClick={handleLogin}
-            disabled={!username.trim() || !selectedRole}
-          >
+          {error && (
+            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">
+              <AlertCircle className="w-4 h-4" />
+              {error}
+            </div>
+          )}
+
+          <Button className="w-full" onClick={handleLogin}>
             登录
           </Button>
+
+          <div className="pt-3 border-t">
+            <p className="text-xs text-gray-400 mb-2">示范账号（仅供测试）：</p>
+            <div className="space-y-1 text-xs text-gray-500 font-mono">
+              <div>{ROLE_LABELS.admin}：admin / admin_xthy</div>
+              <div>{ROLE_LABELS.operator}：operator / operator_xthy</div>
+              <div>{ROLE_LABELS.viewer}：viewer / viewer_xthy</div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
