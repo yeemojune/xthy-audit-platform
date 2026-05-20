@@ -47,7 +47,7 @@ export default function SettingsPage() {
       apiUrl: '',
       apiKey: '',
       model: '',
-      concurrency: 20,
+      concurrency: 10,
     })
   }
 

@@ -3,9 +3,17 @@
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { FileJson, FileText, GitCompare, Calculator, Wrench } from 'lucide-react'
+import { FileJson, FileText, GitCompare, Calculator, Wrench, Eye } from 'lucide-react'
 
 const tools = [
+  {
+    href: '/tools/viewer',
+    title: '数据查看器',
+    desc: '上传或拖入 Excel/CSV/JSON 文件，自动识别类型并渲染为表格或 JSON 树。',
+    icon: Eye,
+    color: 'bg-cyan-50 text-cyan-600',
+    tag: '推荐',
+  },
   {
     href: '/tools/json-validator',
     title: 'JSON 校验与格式化',

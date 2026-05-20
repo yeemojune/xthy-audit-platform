@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  ClipboardCheck, Settings, LayoutDashboard,
-  Package, FileText, Users, BarChart3, Shield, LogOut, Wrench
+  FlaskConical, Settings, LayoutDashboard,
+  Package, FileText, Users, BarChart3, Shield, LogOut, Wrench,
+  Sparkles, Database
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore, canAccessSettings, ROLE_LABELS } from '@/lib/auth-store'
@@ -12,9 +13,11 @@ import { Badge } from '@/components/ui/badge'
 
 const navItems = [
   { href: '/', label: '工作台', icon: LayoutDashboard },
-  { href: '/rubric-audit', label: '审核 Rubric', icon: ClipboardCheck },
+  { href: '/eval', label: '评测中心', icon: Sparkles },
+  { href: '/templates', label: '模板库', icon: FileText },
+  { href: '/datasets', label: '数据集', icon: Database },
+  { href: '/prompt-test', label: 'Prompt 测试', icon: FlaskConical },
   { href: '/tools', label: '工具箱', icon: Wrench },
-  { href: '/module-2', label: '数据标注', icon: FileText },
   { href: '/module-3', label: '质量监控', icon: BarChart3 },
   { href: '/module-4', label: '人员管理', icon: Users },
   { href: '/module-5', label: '任务分配', icon: Package },

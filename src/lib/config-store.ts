@@ -27,7 +27,7 @@ const DEFAULT_CONFIG: ApiConfig = {
   apiUrl: 'https://routify.alibaba-inc.com/protocol/anthropic/v1/messages',
   apiKey: 'sk-9eba1adb38fa4cb1af5dca05f58f8472',
   model: 'claude-sonnet-4-6-20260217',
-  concurrency: 20,
+  concurrency: 10,
 }
 
 function generateId() {
@@ -68,7 +68,20 @@ export const useConfigStore = create<ConfigStore>()(
         return state.configs.find(c => c.id === state.activeConfigId) || state.configs[0] || DEFAULT_CONFIG
       },
     }),
-    { name: 'xthy-api-config' }
+    { 
+      name: 'xthy-api-config',
+      version: 1,
+      // 迁移：v0 -> v1 默认并发从 20 调为 10
+      migrate: (persistedState: unknown, version: number) => {
+        const state = persistedState as { configs?: ApiConfig[]; activeConfigId?: string }
+        if (version < 1 && state?.configs) {
+          state.configs = state.configs.map(c =>
+            c.concurrency === 20 ? { ...c, concurrency: 10 } : c
+          )
+        }
+        return state
+      },
+    }
   )
 )
 
