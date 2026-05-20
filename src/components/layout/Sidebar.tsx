@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   ClipboardCheck, Settings, LayoutDashboard,
-  Package, FileText, Users, BarChart3, Shield, LogOut
+  Package, FileText, Users, BarChart3, Shield, LogOut, Wrench
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore, canAccessSettings, ROLE_LABELS } from '@/lib/auth-store'
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 const navItems = [
   { href: '/', label: '工作台', icon: LayoutDashboard },
   { href: '/rubric-audit', label: '审核 Rubric', icon: ClipboardCheck },
+  { href: '/tools', label: '工具箱', icon: Wrench },
   { href: '/module-2', label: '数据标注', icon: FileText },
   { href: '/module-3', label: '质量监控', icon: BarChart3 },
   { href: '/module-4', label: '人员管理', icon: Users },
