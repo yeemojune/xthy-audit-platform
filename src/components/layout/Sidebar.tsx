@@ -1,0 +1,76 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import {
+  ClipboardCheck, Settings, LayoutDashboard,
+  Package, FileText, Users, BarChart3, Shield
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+const navItems = [
+  { href: '/', label: '工作台', icon: LayoutDashboard },
+  { href: '/rubric-audit', label: '审核 Rubric', icon: ClipboardCheck },
+  { href: '/module-2', label: '数据标注', icon: FileText },
+  { href: '/module-3', label: '质量监控', icon: BarChart3 },
+  { href: '/module-4', label: '人员管理', icon: Users },
+  { href: '/module-5', label: '任务分配', icon: Package },
+  { href: '/module-6', label: '权限管理', icon: Shield },
+]
+
+export function Sidebar() {
+  const pathname = usePathname()
+
+  return (
+    <aside className="fixed left-0 top-0 z-40 h-screen w-60 bg-[#0f1b2d] text-white flex flex-col">
+      {/* Logo */}
+      <div className="flex items-center gap-2 px-5 py-5 border-b border-white/10">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-sm font-bold">
+          衡
+        </div>
+        <div>
+          <div className="text-sm font-semibold tracking-wide">晓天衡宇</div>
+          <div className="text-[10px] text-blue-300/70">数据审核平台</div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {navItems.map(item => {
+          const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+                active
+                  ? 'bg-blue-600/30 text-blue-200 font-medium'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+              )}
+            >
+              <item.icon className="w-4 h-4" />
+              {item.label}
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* Bottom settings */}
+      <div className="px-3 py-3 border-t border-white/10">
+        <Link
+          href="/settings"
+          className={cn(
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+            pathname === '/settings'
+              ? 'bg-blue-600/30 text-blue-200'
+              : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+          )}
+        >
+          <Settings className="w-4 h-4" />
+          系统设置
+        </Link>
+      </div>
+    </aside>
+  )
+}

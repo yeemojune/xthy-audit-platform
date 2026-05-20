@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: 'export',
+  basePath: '/xthy-audit-platform',
+  assetPrefix: '/xthy-audit-platform/',
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;
