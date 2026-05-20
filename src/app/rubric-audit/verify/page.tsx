@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuditStore } from '@/lib/audit-store'
 import { useConfigStore } from '@/lib/config-store'
+import { useAuthStore, canExecuteTask } from '@/lib/auth-store'
 import { callLLM } from '@/lib/llm-client'
 import { exportToExcel, downloadBlob } from '@/lib/excel-parser'
 import { TaskProgressPanel } from '@/components/TaskProgressPanel'
@@ -38,6 +39,8 @@ rubric项：[+N] 原文引用
 export default function VerifyPage() {
   const { auditRows, verifyProgress, setVerifyProgress, updateVerifyResult } = useAuditStore()
   const config = useConfigStore(s => s.getActiveConfig())
+  const session = useAuthStore(s => s.session)
+  const taskAllowed = canExecuteTask(session?.role || 'viewer')
   const abortRef = useRef(false)
   const [started, setStarted] = useState(false)
   const [errors, setErrors] = useState(0)
@@ -139,10 +142,14 @@ export default function VerifyPage() {
         <Card>
           <CardContent className="pt-6 flex items-center gap-4 flex-wrap">
             {!verifyProgress.running ? (
-              <Button onClick={handleStart}>
-                <Play className="w-4 h-4 mr-2" />
-                {doneCount > 0 ? '继续校验' : '开始校验'}
-              </Button>
+              taskAllowed ? (
+                <Button onClick={handleStart}>
+                  <Play className="w-4 h-4 mr-2" />
+                  {doneCount > 0 ? '继续校验' : '开始校验'}
+                </Button>
+              ) : (
+                <Badge variant="outline" className="text-gray-400">查看模式（无操作权限）</Badge>
+              )
             ) : (
               <Button variant="destructive" onClick={handleStop}>
                 <Square className="w-4 h-4 mr-2" />

@@ -1,12 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   ClipboardCheck, Settings, LayoutDashboard,
-  Package, FileText, Users, BarChart3, Shield
+  Package, FileText, Users, BarChart3, Shield, LogOut
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuthStore, canAccessSettings, ROLE_LABELS } from '@/lib/auth-store'
+import { Badge } from '@/components/ui/badge'
 
 const navItems = [
   { href: '/', label: '工作台', icon: LayoutDashboard },
@@ -20,6 +22,16 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const session = useAuthStore(s => s.session)
+  const logout = useAuthStore(s => s.logout)
+
+  const handleLogout = () => {
+    logout()
+    router.push('/login')
+  }
+
+  const showSettings = session && canAccessSettings(session.role)
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-60 bg-[#0f1b2d] text-white flex flex-col">
@@ -56,20 +68,40 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom settings */}
-      <div className="px-3 py-3 border-t border-white/10">
-        <Link
-          href="/settings"
-          className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
-            pathname === '/settings'
-              ? 'bg-blue-600/30 text-blue-200'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
-          )}
-        >
-          <Settings className="w-4 h-4" />
-          系统设置
-        </Link>
+      {/* Bottom: settings + user */}
+      <div className="px-3 py-3 border-t border-white/10 space-y-1">
+        {showSettings && (
+          <Link
+            href="/settings"
+            className={cn(
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+              pathname === '/settings'
+                ? 'bg-blue-600/30 text-blue-200'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+            )}
+          >
+            <Settings className="w-4 h-4" />
+            系统设置
+          </Link>
+        )}
+        {session && (
+          <div className="flex items-center justify-between px-3 py-2">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-blue-500/30 flex items-center justify-center text-[10px] text-blue-200">
+                {session.username[0]}
+              </div>
+              <div>
+                <div className="text-xs text-gray-300">{session.username}</div>
+                <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-white/10 text-gray-400">
+                  {ROLE_LABELS[session.role]}
+                </Badge>
+              </div>
+            </div>
+            <button onClick={handleLogout} className="text-gray-500 hover:text-gray-300 transition-colors" title="退出登录">
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   )

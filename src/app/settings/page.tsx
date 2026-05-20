@@ -9,13 +9,30 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { useConfigStore, ApiConfig } from '@/lib/config-store'
+import { useAuthStore, canAccessSettings } from '@/lib/auth-store'
 import { testConnection } from '@/lib/llm-client'
 import { Loader2, CheckCircle2, XCircle, Plus, Trash2, Star } from 'lucide-react'
 
 export default function SettingsPage() {
   const { configs, activeConfigId, addConfig, updateConfig, removeConfig, setActiveConfig } = useConfigStore()
+  const session = useAuthStore(s => s.session)
   const [testing, setTesting] = useState<string | null>(null)
   const [testResults, setTestResults] = useState<Record<string, { ok: boolean; msg: string }>>({})
+
+  if (!session || !canAccessSettings(session.role)) {
+    return (
+      <>
+        <Header title="系统设置" />
+        <div className="p-6">
+          <Card>
+            <CardContent className="pt-6 text-center text-gray-500">
+              <p>您没有访问系统设置的权限，仅管理员可配置。</p>
+            </CardContent>
+          </Card>
+        </div>
+      </>
+    )
+  }
 
   const handleTest = async (config: ApiConfig) => {
     setTesting(config.id)

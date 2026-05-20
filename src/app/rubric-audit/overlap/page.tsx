@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuditStore } from '@/lib/audit-store'
 import { useConfigStore } from '@/lib/config-store'
+import { useAuthStore, canExecuteTask } from '@/lib/auth-store'
 import { callLLM } from '@/lib/llm-client'
 import { exportToExcel, downloadBlob } from '@/lib/excel-parser'
 import { TaskProgressPanel } from '@/components/TaskProgressPanel'
@@ -39,6 +40,8 @@ const OVERLAP_PROMPT = `你是一名严谨的评分细则（rubric）质量审�
 export default function OverlapPage() {
   const { auditRows, overlapProgress, setOverlapProgress, updateOverlapResult } = useAuditStore()
   const config = useConfigStore(s => s.getActiveConfig())
+  const session = useAuthStore(s => s.session)
+  const taskAllowed = canExecuteTask(session?.role || 'viewer')
   const abortRef = useRef(false)
   const [started, setStarted] = useState(false)
   const [errors, setErrors] = useState(0)
@@ -140,10 +143,14 @@ export default function OverlapPage() {
         <Card>
           <CardContent className="pt-6 flex items-center gap-4 flex-wrap">
             {!overlapProgress.running ? (
-              <Button onClick={handleStart}>
-                <Play className="w-4 h-4 mr-2" />
-                {doneCount > 0 ? '继续检查' : '开始检查'}
-              </Button>
+              taskAllowed ? (
+                <Button onClick={handleStart}>
+                  <Play className="w-4 h-4 mr-2" />
+                  {doneCount > 0 ? '继续检查' : '开始检查'}
+                </Button>
+              ) : (
+                <Badge variant="outline" className="text-gray-400">查看模式（无操作权限）</Badge>
+              )
             ) : (
               <Button variant="destructive" onClick={handleStop}>
                 <Square className="w-4 h-4 mr-2" />

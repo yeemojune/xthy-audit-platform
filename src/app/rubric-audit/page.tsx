@@ -6,29 +6,51 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuditStore } from '@/lib/audit-store'
+import { useAuthStore, canUpload, canExecuteTask, getUploadRowLimit } from '@/lib/auth-store'
 import { parseExcelBuffer } from '@/lib/excel-parser'
 import { Upload, GitCompare, Layers, ShieldCheck, FileSpreadsheet } from 'lucide-react'
 import Link from 'next/link'
 
 export default function RubricAuditPage() {
   const { parsedExcel, auditRows, setParsedExcel, reset } = useAuditStore()
+  const session = useAuthStore(s => s.session)
+  const role = session?.role || 'viewer'
+  const uploadAllowed = canUpload(role)
+  const taskAllowed = canExecuteTask(role)
+  const rowLimit = getUploadRowLimit(role)
 
   const handleUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     const buffer = await file.arrayBuffer()
     const parsed = parseExcelBuffer(buffer, file.name)
+    // 运营角色限制行数
+    if (rowLimit) {
+      const totalRows = parsed.sheets.reduce((sum, s) => sum + s.rows.length, 0)
+      if (totalRows > rowLimit) {
+        alert(`您的角色为“运营”，最多只能上传 ${rowLimit} 行数据，当前文件包含 ${totalRows} 行。`)
+        return
+      }
+    }
     setParsedExcel(parsed)
-  }, [setParsedExcel])
+  }, [setParsedExcel, rowLimit])
 
   const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault()
+    if (!uploadAllowed) return
     const file = e.dataTransfer.files[0]
     if (!file) return
     const buffer = await file.arrayBuffer()
     const parsed = parseExcelBuffer(buffer, file.name)
+    if (rowLimit) {
+      const totalRows = parsed.sheets.reduce((sum, s) => sum + s.rows.length, 0)
+      if (totalRows > rowLimit) {
+        alert(`您的角色为“运营”，最多只能上传 ${rowLimit} 行数据，当前文件包含 ${totalRows} 行。`)
+        return
+      }
+    }
     setParsedExcel(parsed)
-  }, [setParsedExcel])
+  }, [setParsedExcel, uploadAllowed, rowLimit])
 
   return (
     <>
@@ -38,21 +60,32 @@ export default function RubricAuditPage() {
         {!parsedExcel ? (
           <Card>
             <CardContent className="pt-6">
-              <div
-                onDrop={handleDrop}
-                onDragOver={e => e.preventDefault()}
-                className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-400 transition-colors"
-              >
-                <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600 mb-2">拖拽 Excel 文件到此处，或点击选择</p>
-                <p className="text-sm text-gray-400 mb-4">支持 .xlsx 格式</p>
-                <label className="inline-block">
-                  <input type="file" accept=".xlsx,.xls" onChange={handleUpload} className="hidden" />
-                  <span className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm cursor-pointer hover:bg-blue-700">
-                    选择文件
-                  </span>
-                </label>
-              </div>
+              {uploadAllowed ? (
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={e => e.preventDefault()}
+                  className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-400 transition-colors"
+                >
+                  <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-600 mb-2">拖拽 Excel 文件到此处，或点击选择</p>
+                  <p className="text-sm text-gray-400 mb-1">支持 .xlsx 格式</p>
+                  {rowLimit && (
+                    <p className="text-xs text-orange-500 mb-3">您的角色为“运营”，最多可上传 {rowLimit} 行数据</p>
+                  )}
+                  <label className="inline-block">
+                    <input type="file" accept=".xlsx,.xls" onChange={handleUpload} className="hidden" />
+                    <span className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm cursor-pointer hover:bg-blue-700">
+                      选择文件
+                    </span>
+                  </label>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-200 rounded-xl p-12 text-center">
+                  <Upload className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-400">您的角色为“查看人员”，无法上传数据</p>
+                  <p className="text-sm text-gray-300 mt-1">请联系管理员或运营人员上传</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         ) : (
