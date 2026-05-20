@@ -10,6 +10,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
 
+  // 兼容 trailingSlash：/login 与 /login/ 都视为登录页
+  const isLoginPage = pathname === '/login' || pathname === '/login/'
+
   // 客户端挂载后再读取 zustand 状态，避免 SSR 首屏 hydration 不一致
   useEffect(() => {
     setMounted(true)
@@ -17,14 +20,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!mounted) return
-    if (pathname === '/login') return
+    if (isLoginPage) return
     if (!session) {
       router.replace('/login')
     }
-  }, [session, pathname, router, mounted])
+  }, [session, isLoginPage, router, mounted])
 
   // 登录页：始终直接渲染，不被 hydration 状态阻塞
-  if (pathname === '/login') return <>{children}</>
+  if (isLoginPage) return <>{children}</>
 
   // 受保护页面：客户端 mount 前显示占位
   if (!mounted) {
