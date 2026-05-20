@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { useAuthStore, authenticate, ROLE_LABELS } from '@/lib/auth-store'
+import { useAuthStore, authenticate } from '@/lib/auth-store'
 import { Lock, User, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
@@ -79,15 +79,6 @@ export default function LoginPage() {
           <Button className="w-full" onClick={handleLogin}>
             登录
           </Button>
-
-          <div className="pt-3 border-t">
-            <p className="text-xs text-gray-400 mb-2">示范账号（仅供测试）：</p>
-            <div className="space-y-1 text-xs text-gray-500 font-mono">
-              <div>{ROLE_LABELS.admin}：admin / admin_xthy</div>
-              <div>{ROLE_LABELS.operator}：operator / operator_xthy</div>
-              <div>{ROLE_LABELS.viewer}：viewer / viewer_xthy</div>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
