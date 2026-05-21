@@ -3,7 +3,7 @@
  * 支持 {{varName}} 占位符
  */
 
-const VARIABLE_REGEX = /\{\{\s*([\w.[\]]+)\s*\}\}/g
+const VARIABLE_REGEX = /\{\{\s*([\w\u4e00-\u9fff\u3400-\u4dbf.[\]]+)\s*\}\}/g
 
 /**
  * 提取模板中所有变量名（去重，保持出现顺序）
