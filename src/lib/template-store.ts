@@ -42,10 +42,10 @@ rubric指的是对题目中的交付物要求作量化的拆解项，以确保�
 
 ## 输入
 题目：
-{{题目}}
+{{题目_final}}
 
 Rubric：
-{{rubric}}
+{{rubric_final}}
 
 ## 输出规范
 问题类型：未覆盖题目/与题目量化指标冲突/前后矛盾/前后重复
@@ -62,7 +62,7 @@ const RUBRIC_OVERLAP_PROMPT = `## 任务
 请系统地检查以下rubric评分项之间是否存在重叠风险。
 
 ## rubric内容
-{{rubric}}
+{{rubric_final}}
 
 ## 输出规范
 对每组重叠，输出：
@@ -83,7 +83,7 @@ const BUILTIN_TEMPLATES: PromptTemplate[] = [
     name: 'Rubric 综合审查',
     description: '检查rubric是否完整覆盖题目、量化指标是否一致、是否存在前后矛盾或重复',
     content: RUBRIC_REVIEW_PROMPT,
-    variables: ['题目', 'rubric'],
+    variables: ['题目_final', 'rubric_final'],
     outputSchema: [
       { name: 'issues', type: 'string', description: '问题列表', required: true },
     ],
@@ -97,7 +97,7 @@ const BUILTIN_TEMPLATES: PromptTemplate[] = [
     name: 'Rubric 重复情况审查',
     description: '检查同一份rubric内部各评分项之间是否存在语义重叠或重复给分',
     content: RUBRIC_OVERLAP_PROMPT,
-    variables: ['rubric'],
+    variables: ['rubric_final'],
     outputSchema: [
       { name: 'overlaps', type: 'string', description: '重叠组列表', required: true },
     ],
@@ -110,8 +110,8 @@ const BUILTIN_TEMPLATES: PromptTemplate[] = [
     id: 'builtin_topic_similarity',
     name: '题目重复度审查',
     description: '使用TF-IDF向量相似度检查多个题目之间的重复程度',
-    content: '本模板使用本地向量相似度计算，不调用LLM。\n将所有行的「{{题目}}」字段进行TF-IDF向量化后两两计算余弦相似度，输出高相似度对。',
-    variables: ['题目'],
+    content: '本模板使用本地向量相似度计算，不调用LLM。\n将所有行的「{{题目_final}}」字段进行TF-IDF向量化后两两计算余弦相似度，输出高相似度对。',
+    variables: ['题目_final'],
     outputSchema: [
       { name: 'pairs', type: 'string', description: '高相似度对列表', required: true },
     ],

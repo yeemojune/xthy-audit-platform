@@ -5,6 +5,7 @@ export interface Project {
   id: string
   name: string
   description?: string
+  ownerId: string                                          // 所属用户
   templateIds: string[]                                    // 关联的模板ID列表
   datasetId?: string                                       // 预绑定的数据集
   fieldBindings: Record<string, Record<string, string>>    // { templateId: { varName: fieldPath } }
@@ -18,6 +19,7 @@ interface ProjectStore {
   updateProject: (id: string, partial: Partial<Project>) => void
   removeProject: (id: string) => void
   getProject: (id: string) => Project | undefined
+  getProjectsForUser: (username: string, role: string) => Project[]
 }
 
 function genId() {
@@ -29,6 +31,7 @@ const BUILTIN_PROJECTS: Project[] = [
     id: 'proj_rubric_audit',
     name: 'Rubric 质量审核',
     description: '综合审查 + 重复情况审查 + 题目重复度审查',
+    ownerId: 'admin',
     templateIds: ['builtin_rubric_review', 'builtin_rubric_overlap', 'builtin_topic_similarity'],
     fieldBindings: {},
     createdAt: 0,
@@ -61,6 +64,11 @@ export const useProjectStore = create<ProjectStore>()(
       },
 
       getProject: (id) => get().projects.find((p) => p.id === id),
+
+      getProjectsForUser: (username, role) => {
+        if (role === 'admin') return get().projects
+        return get().projects.filter((p) => p.ownerId === username)
+      },
     }),
     {
       name: 'xthy-projects',

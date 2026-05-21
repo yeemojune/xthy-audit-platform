@@ -9,20 +9,29 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useProjectStore, type Project } from '@/lib/project-store'
 import { useTemplateStore } from '@/lib/template-store'
+import { useAuthStore } from '@/lib/auth-store'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
 import {
-  FolderKanban, Plus, Pencil, Trash2, Play, FileText, Zap,
+  FolderKanban, Plus, Pencil, Trash2, Play, FileText, Zap, User,
 } from 'lucide-react'
 
 export default function ProjectsPage() {
   const router = useRouter()
-  const projects = useProjectStore((s) => s.projects)
+  const allProjects = useProjectStore((s) => s.projects)
   const addProject = useProjectStore((s) => s.addProject)
   const updateProject = useProjectStore((s) => s.updateProject)
   const removeProject = useProjectStore((s) => s.removeProject)
+  const getProjectsForUser = useProjectStore((s) => s.getProjectsForUser)
   const templates = useTemplateStore((s) => s.templates)
+  const session = useAuthStore((s) => s.session)
+
+  // 根据用户角色过滤项目
+  const projects = useMemo(() => {
+    if (!session) return allProjects
+    return getProjectsForUser(session.username, session.role)
+  }, [allProjects, session, getProjectsForUser])
 
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => setHydrated(true), [])
@@ -64,6 +73,7 @@ export default function ProjectsPage() {
       addProject({
         name: form.name.trim(),
         description: form.description.trim() || undefined,
+        ownerId: session?.username || 'admin',
         templateIds: form.templateIds,
         fieldBindings: {},
       })
@@ -111,6 +121,9 @@ export default function ProjectsPage() {
                       )}
                     </div>
                   </div>
+                  <Badge variant="secondary" className="text-[10px] flex-shrink-0">
+                    <User className="w-2.5 h-2.5 mr-0.5" /> {p.ownerId}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
