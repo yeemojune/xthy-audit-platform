@@ -6,6 +6,7 @@ import { callLLM } from './llm-client'
 import { renderTemplate } from './template-engine'
 import { schemaToPromptHint, parseAndValidate } from './schema-validator'
 import { valueToString } from './json-path'
+import { computeSimilarity } from './similarity'
 
 export interface RunCallbacks {
   onResult: (result: EvalResult) => void
@@ -82,6 +83,66 @@ async function runOne(
     }
   } catch (e: unknown) {
     return { rowIndex, error: String(e), durationMs: Date.now() - start }
+  }
+}
+
+/**
+ * 相似度模板执行：收集所有行的指定字段，本地计算TF-IDF余弦相似度
+ */
+export async function runSimilarityTask(opts: {
+  template: PromptTemplate
+  dataset: Dataset
+  bindings: BindingItem[]
+  rowCount: number
+  callbacks: RunCallbacks
+}): Promise<void> {
+  const { template, dataset, bindings, rowCount, callbacks } = opts
+  const total = Math.min(rowCount, dataset.rows.length)
+
+  // 找到主要变量的字段绑定
+  const mainVar = template.variables[0] || ''
+  const binding = bindings.find((b) => b.variable === mainVar)
+  const fieldPath = binding?.mode === 'field' ? binding.fieldPath : undefined
+
+  // 收集所有行的文本
+  const items: { sheet: string; title: string; text: string }[] = []
+  for (let i = 0; i < total; i++) {
+    const row = dataset.rows[i]
+    const text = fieldPath ? valueToString(row[fieldPath]) : ''
+    items.push({
+      sheet: String(i),
+      title: text.slice(0, 80),
+      text,
+    })
+  }
+
+  // 计算相似度
+  const simResult = computeSimilarity(items, 0.3)
+
+  // 为每一行生成结果：列出与其他行的相似度
+  for (let i = 0; i < total; i++) {
+    if (callbacks.shouldStop()) return
+    const relatedPairs = simResult.pairs.filter((p) => p.idxA === i || p.idxB === i)
+    if (relatedPairs.length === 0) {
+      callbacks.onResult({
+        rowIndex: i,
+        output: { pairs: '未发现高相似度题目' },
+        raw: '未发现相似度 >= 0.3 的题目对',
+        durationMs: 0,
+      })
+    } else {
+      const lines = relatedPairs.map((p) => {
+        const otherIdx = p.idxA === i ? p.idxB : p.idxA
+        const otherTitle = p.idxA === i ? p.titleB : p.titleA
+        return `第${otherIdx + 1}行 (${(p.similarity * 100).toFixed(1)}%): ${otherTitle}`
+      })
+      callbacks.onResult({
+        rowIndex: i,
+        output: { pairs: lines.join('\n') },
+        raw: `发现 ${relatedPairs.length} 个相似题目:\n${lines.join('\n')}`,
+        durationMs: 0,
+      })
+    }
   }
 }
 

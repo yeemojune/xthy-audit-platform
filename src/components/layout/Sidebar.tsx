@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   FlaskConical, Settings, LayoutDashboard,
   Package, FileText, Users, BarChart3, Shield, LogOut, Wrench,
-  Sparkles, Database
+  Sparkles, Database, FolderKanban
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore, canAccessSettings, ROLE_LABELS } from '@/lib/auth-store'
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 
 const navItems = [
   { href: '/', label: '工作台', icon: LayoutDashboard },
+  { href: '/projects', label: '项目', icon: FolderKanban },
   { href: '/eval', label: '评测中心', icon: Sparkles },
   { href: '/templates', label: '模板库', icon: FileText },
   { href: '/datasets', label: '数据集', icon: Database },

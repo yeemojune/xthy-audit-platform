@@ -25,7 +25,7 @@ function EditorInner() {
   const addTemplate = useTemplateStore((s) => s.addTemplate)
   const updateTemplate = useTemplateStore((s) => s.updateTemplate)
   const existing = isNew ? null : getTemplate(id)
-  const readOnly = !!existing?.builtin
+  const readOnly = false  // 所有模板均可编辑
 
   const [name, setName] = useState(existing?.name ?? '')
   const [description, setDescription] = useState(existing?.description ?? '')
@@ -59,10 +59,11 @@ function EditorInner() {
       variables,
       outputSchema: schema.filter((f) => f.name.trim()),
       systemPrompt: systemPrompt.trim() || undefined,
+      type: existing?.type || ('llm' as const),
     }
     if (isNew) {
       addTemplate(data)
-    } else if (!readOnly) {
+    } else {
       updateTemplate(id, data)
     }
     router.push('/templates')

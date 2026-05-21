@@ -51,9 +51,9 @@ export default function TemplatesPage() {
                     )}
                   </div>
                 </div>
-                {t.builtin && (
-                  <Badge variant="secondary" className="text-[10px] flex-shrink-0">
-                    <Lock className="w-2.5 h-2.5 mr-1" /> 内置
+                {t.type === 'similarity' && (
+                  <Badge variant="outline" className="text-[10px] flex-shrink-0 border-amber-300 text-amber-700 bg-amber-50">
+                    相似度
                   </Badge>
                 )}
               </div>
@@ -82,10 +82,10 @@ export default function TemplatesPage() {
               <div className="flex items-center justify-end gap-2 pt-1 border-t">
                 <Link href={'/templates/edit?id=' + t.id}>
                   <Button variant="outline" size="sm">
-                    <Edit3 className="w-3.5 h-3.5 mr-1" /> {t.builtin ? '查看' : '编辑'}
+                    <Edit3 className="w-3.5 h-3.5 mr-1" /> 编辑
                   </Button>
                 </Link>
-                {!t.builtin && (
+                {(
                   <Button
                     variant="outline"
                     size="sm"

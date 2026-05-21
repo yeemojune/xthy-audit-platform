@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
   FlaskConical, FileText, BarChart3, Users, Package, Shield,
-  Sparkles, Database, Wrench, ArrowRight, Plus,
+  Sparkles, Database, Wrench, ArrowRight, Plus, FolderKanban,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -14,6 +14,7 @@ import { useDatasetStore } from '@/lib/dataset-store'
 import { useTemplateStore } from '@/lib/template-store'
 
 const coreModules = [
+  { href: '/projects', title: '项目管理', desc: '配置项目工作流，多模板一键跑批', icon: FolderKanban, color: 'bg-indigo-50 text-indigo-600' },
   { href: '/eval', title: '评测中心', desc: '上传数据 → 选模板 → 跑批 → 导出', icon: Sparkles, color: 'bg-blue-50 text-blue-600' },
   { href: '/templates', title: '模板库', desc: 'Prompt 模板 + 输出 JSON Schema', icon: FileText, color: 'bg-purple-50 text-purple-600' },
   { href: '/datasets', title: '数据集', desc: 'Excel / JSON 数据上传与字段管理', icon: Database, color: 'bg-emerald-50 text-emerald-600' },

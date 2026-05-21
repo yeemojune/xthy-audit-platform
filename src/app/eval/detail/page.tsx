@@ -10,7 +10,7 @@ import { useTaskStore, type EvalResult } from '@/lib/task-store'
 import { useDatasetStore } from '@/lib/dataset-store'
 import { useTemplateStore } from '@/lib/template-store'
 import { useConfigStore } from '@/lib/config-store'
-import { runEvalTask } from '@/lib/eval-runner'
+import { runEvalTask, runSimilarityTask } from '@/lib/eval-runner'
 import { exportToExcel, downloadBlob } from '@/lib/excel-parser'
 import { ArrowLeft, Play, Pause, RotateCw, Download, AlertCircle } from 'lucide-react'
 
@@ -60,19 +60,32 @@ function DetailInner() {
     const doneSet = new Set<number>()
     for (const r of task.results) if (!r.error) doneSet.add(r.rowIndex)
 
-    runEvalTask({
-      apiConfig,
-      template,
-      dataset,
-      bindings: task.bindings,
-      rowCount: task.rowCount,
-      concurrency: apiConfig.concurrency || 5,
-      doneRowIndexes: doneSet,
-      callbacks: {
-        onResult: (r: EvalResult) => appendResult(task.id, r),
-        shouldStop: () => stopRef.current,
-      },
-    })
+    const taskPromise = template.type === 'similarity'
+      ? runSimilarityTask({
+          template,
+          dataset,
+          bindings: task.bindings,
+          rowCount: task.rowCount,
+          callbacks: {
+            onResult: (r: EvalResult) => appendResult(task.id, r),
+            shouldStop: () => stopRef.current,
+          },
+        })
+      : runEvalTask({
+          apiConfig,
+          template,
+          dataset,
+          bindings: task.bindings,
+          rowCount: task.rowCount,
+          concurrency: apiConfig.concurrency || 5,
+          doneRowIndexes: doneSet,
+          callbacks: {
+            onResult: (r: EvalResult) => appendResult(task.id, r),
+            shouldStop: () => stopRef.current,
+          },
+        })
+
+    taskPromise
       .then(() => {
         runningRef.current = false
         const cur = useTaskStore.getState().tasks.find((t) => t.id === task.id)
